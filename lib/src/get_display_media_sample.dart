@@ -49,7 +49,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     try {
       log('Connecting to WebSocket...');
 
-      final uri = Uri.parse('wss://d37f-103-125-36-242.ngrok-free.app/ws');
+      final uri = Uri.parse('ws://10.10.4.21:8080/ws');
       const timeout = Duration(seconds: 10);
 
       _socket = IO.WebSocket(uri, timeout: timeout);
@@ -96,7 +96,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
   Future<void> _initializePeerConnection() async {
     final config = {
       'iceServers': [
-        {'urls': 'stun:stun.l.google.com:19302'},
+        {'urls': []},
       ]
     };
 
@@ -280,8 +280,7 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
       await _peerConnection?.setLocalDescription(offer);
 
       log('🔼 Sending Offer: ${offer.toMap()}');
-      _socket.send(
-          jsonEncode({'offer': offer.toMap()})); // ✅ Convert to JSON String
+      _socket.send(jsonEncode(offer.toMap())); // ✅ Convert to JSON String
       _handleOffer(offer.toMap());
     } catch (e) {
       log('Error: $e');
@@ -324,20 +323,16 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
       body: OrientationBuilder(
         builder: (context, orientation) {
           return Center(
-              child: Container(
-            width: MediaQuery.of(context).size.width,
-            color: Colors.white10,
-            child: Stack(children: <Widget>[
-              if (_inCalling)
-                Container(
-                  margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  decoration: BoxDecoration(color: Colors.black54),
-                  child: RTCVideoView(_localRenderer),
-                )
-            ]),
-          ));
+              child: Stack(children: <Widget>[
+            if (_inCalling) Text('Screen Recorded')
+            // Container(
+            //   margin: EdgeInsets.fromLTRB(0.0, 0.0, 0.0, 0.0),
+            //   width: MediaQuery.of(context).size.width,
+            //   height: MediaQuery.of(context).size.height,
+            //   decoration: BoxDecoration(color: Colors.black54),
+            //   child: RTCVideoView(_localRenderer),
+            // ),
+          ]));
         },
       ),
       floatingActionButton: FloatingActionButton(
