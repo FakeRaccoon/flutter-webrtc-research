@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_background/flutter_background.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:flutter_webrtc_example/src/capture_frame_sample.dart';
+import 'package:flutter_webrtc_example/src/get_display_manual.dart';
 import 'package:flutter_webrtc_example/src/get_display_receiver.dart';
 
 import 'src/device_enumeration_sample.dart';
@@ -117,6 +118,14 @@ class _MyAppState extends State<MyApp> {
                 context,
                 MaterialPageRoute(
                     builder: (BuildContext context) => ScreenViewerApp()));
+          }),
+      RouteItem(
+          title: 'GetDisplayManual',
+          push: (BuildContext context) {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (BuildContext context) => GetDisplayManual()));
           }),
       RouteItem(
           title: 'LoopBack Sample (Unified Tracks)',

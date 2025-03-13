@@ -96,27 +96,30 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
   Future<void> _initializePeerConnection() async {
     final config = {
       'iceServers': [
-        {'urls': []},
+        {'urls': []}, // Add STUN/TURN servers here
       ]
     };
 
     _peerConnection = await createPeerConnection(config);
 
-    // _peerConnection?.onIceCandidate = (RTCIceCandidate candidate) {
-    //   log('🔼 Sending ICE Candidate: $candidate');
+    _peerConnection?.onIceCandidate = (RTCIceCandidate candidate) {
+      if (candidate.candidate == null || candidate.candidate!.isEmpty) {
+        return; // Ignore empty candidates
+      }
 
-    //   // ✅ Convert RTCIceCandidate to JSON before sending
-    //   _socket.send(jsonEncode({
-    //     'type': 'candidate',
-    //     'candidate': candidate.candidate,
-    //     'sdpMid': candidate.sdpMid,
-    //     'sdpMLineIndex': candidate.sdpMLineIndex,
-    //   }));
-    // };
+      log('🔼 Sending ICE Candidate: ${candidate.toMap()}');
 
-    // _peerConnection?.onIceConnectionState = (RTCIceConnectionState state) {
-    //   log('ICE Connection State: $state');
-    // };
+      _socket.send(jsonEncode({
+        'type': 'candidate',
+        'candidate': candidate.candidate,
+        'sdpMid': candidate.sdpMid,
+        'sdpMLineIndex': candidate.sdpMLineIndex,
+      }));
+    };
+
+    _peerConnection?.onIceConnectionState = (RTCIceConnectionState state) {
+      log('ICE Connection State: $state');
+    };
   }
 
   void _handleOffer(Map<String, dynamic> data) async {
@@ -174,6 +177,11 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
   void _handleCandidate(Map<String, dynamic> data) async {
     log('📩 Received ICE Candidate: $data');
 
+    if (_peerConnection == null) {
+      log('❌ _peerConnection is null! Initializing...');
+      await _initializePeerConnection();
+    }
+
     var candidate = RTCIceCandidate(
       data['candidate'],
       data['sdpMid'],
@@ -181,14 +189,6 @@ class _GetDisplayMediaSampleState extends State<GetDisplayMediaSample> {
     );
 
     await _peerConnection?.addCandidate(candidate);
-
-    // ✅ Convert RTCIceCandidate to JSON String before sending
-    _socket.send(jsonEncode({
-      'type': 'candidate',
-      'candidate': candidate.candidate,
-      'sdpMid': candidate.sdpMid,
-      'sdpMLineIndex': candidate.sdpMLineIndex,
-    }));
   }
 
   /// WEB RTC
